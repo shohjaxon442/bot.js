@@ -134,7 +134,7 @@ setInterval(() => {
   for (const chatId in userDayGoals) {
     const goals = userDayGoals[chatId];
     goals.forEach((goal) => {
-      if (goal.time === currentTime && !goal.done) {
+      if (goal.time === currentTime && !goal.done && !goal.notified) {
         bot.sendMessage(
           chatId,
           `⏰ ${goal.time} - ${goal.task}\n\nMaqsadingiz bajarildimi?`,
@@ -145,7 +145,7 @@ setInterval(() => {
             },
           }
         );
-        goal.notified = true;
+        goal.notified = true; // Bu yerda goal.notified ni faollashtiring
       }
     });
   }
@@ -271,10 +271,22 @@ bot.on("message", (msg) => {
 
   if (
     partnerId &&
-    !msg.text.startsWith("/") &&
-    !msg.text.startsWith("🕒") &&
-    !msg.text.startsWith("📅")
+    !msg.text.includes("Maqsad") &&
+    !msg.text.includes("Tugma") &&
+    !msg.text.includes("📌") &&
+    !msg.text.includes("🔍") &&
+    !msg.text.includes("✏️")
   ) {
-    bot.sendMessage(partnerId, msg.text);
+    bot.sendMessage(partnerId, `💬 [Maqsaddoshingiz]: ${msg.text}`);
   }
+});
+
+// Maqsadlarni tahrirlash
+bot.onText(/✏️ Maqsadlarni tahrirlash/, (msg) => {
+  const chatId = msg.chat.id;
+  userDayGoals[chatId] = [];
+  bot.sendMessage(
+    chatId,
+    "Avvalgi maqsadlarni o'zgartirish uchun yangi maqsadlarni yozing."
+  );
 });
