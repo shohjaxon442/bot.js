@@ -30,7 +30,7 @@ bot.onText(/🕒Tugmani Bos/, (msg) => {
   const uzTime = new Date(now);
 
   // 5 soat qo‘shish
-  uzTime.setHours(uzTime.getHours() + 5);
+  uzTime.setHours(uzTime.getHours());
 
   // Formatlangan soat
   const newTime = uzTime.toLocaleTimeString("uz-UZ", {
@@ -39,5 +39,5 @@ bot.onText(/🕒Tugmani Bos/, (msg) => {
     second: "2-digit",
   });
 
-  bot.sendMessage(chatId, `🕔 5 soat qo‘shilgan vaqt: ${newTime}`);
+  bot.sendMessage(chatId, `🕔 Hozirgi vaqt: ${newTime}`);
 });
