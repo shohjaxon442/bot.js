@@ -1,44 +1,30 @@
 const TelegramBot = require("node-telegram-bot-api");
+const token = "7711842324:AAHMFaGCwkSo4F1FXqFAFqapsOuMAe9HgfU"; // O'z tokeningizni qo'ying
 
-// 🔐 Sen kiritgan token
-const token = "7711842324:AAHMFaGCwkSo4F1FXqFAFqapsOuMAe9HgfU";
-
-// Botni ishga tushiramiz
 const bot = new TelegramBot(token, { polling: true });
 
-// /start komandasi — tugma yuboradi
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
+  const username = msg.from.username || "Noma'lum"; // Foydalanuvchining Telegram username'i
+  const firstName = msg.from.first_name || "Noma'lum"; // Foydalanuvchining ismi
 
-  const opts = {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          {
-            text: "🕒 O‘zbekiston soatini ko‘rsat",
-            callback_data: "get_uz_time",
-          },
-        ],
-      ],
-    },
-  };
-
-  bot.sendMessage(chatId, "Quyidagi tugmani bosing:", opts);
+  // Foydalanuvchiga salom berish
+  bot.sendMessage(
+    chatId,
+    `Salom👋, ${firstName}! Bu bot @shohjaxon_0000 tomonidan yaratildi.Qo'shimcha g'oya va takliflar bo'lsa marhamat😊`,
+    {
+      reply_markup: {
+        keyboard: [[{ text: "🕒Tugmani Bos" }]], // Tugma matnini tekshirish
+        resize_keyboard: true,
+      },
+    }
+  );
 });
 
-// Tugma bosilganda Toshkent vaqti yuboriladi
-bot.on("callback_query", (callbackQuery) => {
-  const msg = callbackQuery.message;
-  const data = callbackQuery.data;
-
-  if (data === "get_uz_time") {
-    const uzTime = new Date().toLocaleTimeString("uz-UZ", {
-      timeZone: "Asia/Tashkent",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-
-    bot.sendMessage(msg.chat.id, `🕒 O‘zbekiston vaqti: ${uzTime}`);
-  }
+// Tugmani tekshirish uchun tugma matnini aniq belgilash
+bot.onText(/🕒Tugmani Bos/, (msg) => {
+  // Matnni aniq belgilash
+  const chatId = msg.chat.id;
+  const hozirgiSoat = new Date().toLocaleTimeString();
+  bot.sendMessage(chatId, `⏰ Hozirgi soat: ${hozirgiSoat}`);
 });
