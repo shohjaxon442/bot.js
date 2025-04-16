@@ -37,8 +37,23 @@ bot.onText(/🕒 Tugmani Bosing/, (msg) => {
   bot.sendMessage(chatId, `🕔 Hozirgi vaqt: ${time}`);
 });
 
-// Bugungi maqsadlar qo‘shish
+// 📅 Bugungi maqsadlar menyusi
 bot.onText(/📅 Bugungi maqsadlar/, (msg) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(chatId, "📅 Bugungi maqsadlar bo‘limi:", {
+    reply_markup: {
+      keyboard: [
+        ["➕ Maqsadlar qo‘shish"],
+        ["📖 Bugungi maqsadlarim"],
+        ["🔙 Asosiy menyuga"],
+      ],
+      resize_keyboard: true,
+    },
+  });
+});
+
+// ➕ Maqsadlar qo‘shish
+bot.onText(/➕ Maqsadlar qo‘shish/, (msg) => {
   const chatId = msg.chat.id;
   bot.sendMessage(
     chatId,
@@ -60,6 +75,52 @@ bot.onText(/📅 Bugungi maqsadlar/, (msg) => {
     });
 
     bot.sendMessage(chatId, "✅ Maqsadlaringiz saqlandi.");
+  });
+});
+
+// 📖 Bugungi maqsadlarim
+bot.onText(/📖 Bugungi maqsadlarim/, (msg) => {
+  const chatId = msg.chat.id;
+  const goals = userDayGoals[chatId];
+
+  if (!goals || goals.length === 0) {
+    bot.sendMessage(chatId, "Sizda hali bugungi maqsadlar yo‘q.");
+    return;
+  }
+
+  const goalList = goals
+    .map((g) => `${g.time} - ${g.task} ${g.done ? "✅" : ""}`)
+    .join("\n");
+
+  bot.sendMessage(chatId, `📋 Maqsadlaringiz:\n\n${goalList}`, {
+    reply_markup: {
+      keyboard: [
+        ["✏️ Maqsadlarni tahrirlash", "❌ Ularni o‘chirish"],
+        ["🔙 Orqaga"],
+      ],
+      resize_keyboard: true,
+    },
+  });
+});
+
+// ❌ Ularni o‘chirish
+bot.onText(/❌ Ularni o‘chirish/, (msg) => {
+  const chatId = msg.chat.id;
+  userDayGoals[chatId] = [];
+  bot.sendMessage(chatId, "❌ Barcha bugungi maqsadlaringiz o‘chirildi.");
+});
+
+// 🔙 Asosiy menyuga
+bot.onText(/🔙 Asosiy menyuga/, (msg) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(chatId, "Asosiy menyu:", {
+    reply_markup: {
+      keyboard: [
+        ["🕒 Tugmani Bosing", "📅 Bugungi maqsadlar"],
+        ["🤝 Maqsaddoshlar"],
+      ],
+      resize_keyboard: true,
+    },
   });
 });
 
@@ -140,19 +201,6 @@ bot.onText(/🤝 Maqsaddoshlar/, (msg) => {
         ["🔍 Maqsaddosh izlash"],
         ["✏️ Maqsadlarni tahrirlash"],
         ["🔙 Orqaga"],
-      ],
-      resize_keyboard: true,
-    },
-  });
-});
-
-bot.onText(/🔙 Orqaga/, (msg) => {
-  const chatId = msg.chat.id;
-  bot.sendMessage(chatId, "Asosiy menyu:", {
-    reply_markup: {
-      keyboard: [
-        ["🕒 Tugmani Bosing", "📅 Bugungi maqsadlar"],
-        ["🤝 Maqsaddoshlar"],
       ],
       resize_keyboard: true,
     },
