@@ -11,7 +11,7 @@ bot.onText(/\/start/, (msg) => {
   // Foydalanuvchiga salom berish
   bot.sendMessage(
     chatId,
-    `Salom👋, ${firstName}! Bu bot @shohjaxon_0000 tomonidan yaratildi.Qo'shimcha g'oya va takliflar bo'lsa marhamat😊`,
+    `Salom👋, ${firstName}! Bu bot @shohjaxon_0000 tomonidan yaratildi.\nQo'shimcha g'oya va takliflar bo'lsa marhamat😊`,
     {
       reply_markup: {
         keyboard: [[{ text: "🕒Tugmani Bos" }]], // Tugma matnini tekshirish
@@ -21,10 +21,23 @@ bot.onText(/\/start/, (msg) => {
   );
 });
 
-// Tugmani tekshirish uchun tugma matnini aniq belgilash
+// Tugma bosilganda hozirgi vaqtdan 5 soat oldinga o‘tgan vaqtni yuboradi
 bot.onText(/🕒Tugmani Bos/, (msg) => {
-  // Matnni aniq belgilash
   const chatId = msg.chat.id;
-  const hozirgiSoat = new Date().toLocaleTimeString();
-  bot.sendMessage(chatId, `⏰ Hozirgi soat: ${hozirgiSoat}`);
+
+  // O‘zbekiston vaqtini olish
+  const now = new Date().toLocaleString("en-US", { timeZone: "Asia/Tashkent" });
+  const uzTime = new Date(now);
+
+  // 5 soat qo‘shish
+  uzTime.setHours(uzTime.getHours() + 5);
+
+  // Formatlangan soat
+  const newTime = uzTime.toLocaleTimeString("uz-UZ", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
+  bot.sendMessage(chatId, `🕔 5 soat qo‘shilgan vaqt: ${newTime}`);
 });
