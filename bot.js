@@ -271,22 +271,10 @@ bot.on("message", (msg) => {
 
   if (
     partnerId &&
-    !msg.text.includes("Maqsad") &&
-    !msg.text.includes("Tugma") &&
-    !msg.text.includes("📌") &&
-    !msg.text.includes("🔍") &&
-    !msg.text.includes("✏️")
+    !msg.text.startsWith("/") &&
+    !msg.text.startsWith("🕒") &&
+    !msg.text.startsWith("📅")
   ) {
-    bot.sendMessage(partnerId, `💬 [Maqsaddoshingiz]: ${msg.text}`);
+    bot.sendMessage(partnerId, msg.text);
   }
-});
-
-// Maqsadlarni tahrirlash
-bot.onText(/✏️ Maqsadlarni tahrirlash/, (msg) => {
-  const chatId = msg.chat.id;
-  userGoals[chatId] = [];
-  bot.sendMessage(
-    chatId,
-    "Avvalgi maqsadlar o‘chirildi. Yangi maqsadlaringizni yozing:"
-  );
 });
