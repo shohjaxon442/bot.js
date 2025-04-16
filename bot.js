@@ -4,7 +4,6 @@ const bot = new TelegramBot(token, { polling: true });
 
 const userGoals = {}; // { chatId: [ { time: "08:00", task: "Uygonaman", done: false } ] }
 
-// START komandasi
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
   const firstName = msg.from.first_name || "Foydalanuvchi";
@@ -14,18 +13,40 @@ bot.onText(/\/start/, (msg) => {
     `Salom👋, ${firstName}! Bu bot @shohjaxon_0000 tomonidan yaratildi.\nQo'shimcha g'oya va takliflar bo'lsa marhamat😊`,
     {
       reply_markup: {
-        keyboard: [
-          [{ text: "🕒Tugmani Bos" }],
-          [
-            { text: "📌 Bugungi maqsadlar" },
-            { text: "🗑 Maqsadlarni o'chirish" },
-            { text: "📍 Maqsadlarni o'zgartirish" },
-          ],
-        ],
+        keyboard: [[{ text: "🕒Tugmani Bos" }], [{ text: "📌 Maqsadlar" }]],
         resize_keyboard: true,
       },
     }
   );
+});
+
+// 📌 Maqsadlar tugmasi
+bot.onText(/📌 Maqsadlar/, (msg) => {
+  const chatId = msg.chat.id;
+
+  bot.sendMessage(chatId, "Maqsadlar bo'limiga xush kelibsiz!", {
+    reply_markup: {
+      keyboard: [
+        [{ text: "📌 Bugungi maqsadlar" }],
+        [{ text: "🗑 Maqsadlarni o'chirish" }],
+        [{ text: "📍 Maqsadlarni o'zgartirish" }],
+        [{ text: "🔙 Orqaga qaytish" }],
+      ],
+      resize_keyboard: true,
+    },
+  });
+});
+
+// Orqaga qaytish tugmasi
+bot.onText(/🔙 Orqaga qaytish/, (msg) => {
+  const chatId = msg.chat.id;
+
+  bot.sendMessage(chatId, "Asosiy menyu:", {
+    reply_markup: {
+      keyboard: [[{ text: "🕒Tugmani Bos" }], [{ text: "📌 Maqsadlar" }]],
+      resize_keyboard: true,
+    },
+  });
 });
 
 // 🕒 Tugmani bos
@@ -68,7 +89,13 @@ bot.onText(/📌 Bugungi maqsadlar/, (msg) => {
 
     bot.sendMessage(
       chatId,
-      "✅ Maqsadlaringiz saqlandi! Vaqti kelganda eslatib turaman."
+      "✅ Maqsadlaringiz saqlandi! Vaqti kelganda eslatib turaman.",
+      {
+        reply_markup: {
+          keyboard: [[{ text: "🕒Tugmani Bos" }], [{ text: "📌 Maqsadlar" }]],
+          resize_keyboard: true,
+        },
+      }
     );
   });
 });
@@ -140,55 +167,3 @@ bot.on("message", (msg) => {
     }
   }
 });
-
-// Ha / Yo'q tugmasi javoblari
-bot.on("callback_query", (query) => {
-  const chatId = query.message.chat.id;
-  const data = query.data;
-  const goalIndex = parseInt(data.split("_")[1]);
-
-  if (data.startsWith("yes_")) {
-    bot.sendMessage(chatId, "✅ Ajoyib! Endi keyingi maqsadga o'ting.");
-    userGoals[chatId][goalIndex].done = true;
-  } else if (data.startsWith("no_")) {
-    bot.sendMessage(chatId, "💪 Ko‘proq harakat qiling! Sizga ishonamiz.");
-    userGoals[chatId][goalIndex].done = true;
-  }
-
-  bot.answerCallbackQuery(query.id);
-});
-
-// Har daqiqa vaqtni tekshirish
-setInterval(() => {
-  const now = new Date().toLocaleString("en-US", { timeZone: "Asia/Tashkent" });
-  const currentTime = new Date(now);
-  const timeStr = currentTime
-    .toLocaleTimeString("uz-UZ", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    })
-    .slice(0, 5);
-
-  Object.keys(userGoals).forEach((chatId) => {
-    const goals = userGoals[chatId];
-    goals.forEach((goal, index) => {
-      if (goal.time === timeStr && !goal.done) {
-        bot.sendMessage(
-          chatId,
-          `⏰ Soat ${goal.time}. ${goal.task} bajarildimi?`,
-          {
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  { text: "✅ Ha", callback_data: `yes_${index}` },
-                  { text: "❌ Yo‘q", callback_data: `no_${index}` },
-                ],
-              ],
-            },
-          }
-        );
-      }
-    });
-  });
-}, 60000); // Har 1 daqiqada tekshiradi
