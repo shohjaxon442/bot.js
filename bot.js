@@ -13,7 +13,7 @@ bot.onText(/\/start/, (msg) => {
     `Salom👋, ${firstName}! Bu bot @shohjaxon_0000 tomonidan yaratildi.\nQo'shimcha g'oya va takliflar bo'lsa marhamat😊`,
     {
       reply_markup: {
-        keyboard: [[{ text: "🕒Tugmani Bos" }], [{ text: "📌 Maqsadlar" }]],
+        keyboard: [[{ text: "🕒Tugmani Bosing" }], [{ text: "📌 Maqsadlar" }]],
         resize_keyboard: true,
       },
     }
@@ -43,7 +43,7 @@ bot.onText(/🔙 Orqaga qaytish/, (msg) => {
 
   bot.sendMessage(chatId, "Asosiy menyu:", {
     reply_markup: {
-      keyboard: [[{ text: "🕒Tugmani Bos" }], [{ text: "📌 Maqsadlar" }]],
+      keyboard: [[{ text: "🕒Tugmani Bosing" }], [{ text: "📌 Maqsadlar" }]],
       resize_keyboard: true,
     },
   });
@@ -69,7 +69,7 @@ bot.onText(/📌 Bugungi maqsadlar/, (msg) => {
   const chatId = msg.chat.id;
   bot.sendMessage(
     chatId,
-    "Bugungi maqsadlaringizni yozing. Har birini yangi qatorda va vaqt bilan yozing:\n\nMasalan:\n08:00 Uygonaman\n09:09 Tushlik qilaman"
+    "Bugungi maqsadlaringizni yozing. Har birini yangi qatorda va vaqt bilan yozing:\n\nMasalan:\n08:00 Uyg'onaman\n12:09 Tushlik qilaman"
   );
 
   bot.once("message", (reply) => {
@@ -89,10 +89,13 @@ bot.onText(/📌 Bugungi maqsadlar/, (msg) => {
 
     bot.sendMessage(
       chatId,
-      "✅ Maqsadlaringiz saqlandi! Vaqti kelganda eslatib turaman.",
+      "✅ Maqsadlaringiz saqlandi! Vaqti kelganda eslatib turaman. ",
       {
         reply_markup: {
-          keyboard: [[{ text: "🕒Tugmani Bos" }], [{ text: "📌 Maqsadlar" }]],
+          keyboard: [
+            [{ text: "🕒Tugmani Bosing" }],
+            [{ text: "📌 Maqsadlar" }],
+          ],
           resize_keyboard: true,
         },
       }
