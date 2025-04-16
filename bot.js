@@ -21,7 +21,8 @@ bot.onText(/\/start/, (msg) => {
 // 🕒 Vaqt
 bot.onText(/🕒 Vaqt/, (msg) => {
   const chatId = msg.chat.id;
-  const time = new Date().toLocaleTimeString("uz-UZ", {
+  const now = new Date().toLocaleString("en-US", { timeZone: "Asia/Tashkent" });
+  const time = new Date(now).toLocaleTimeString("uz-UZ", {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -208,10 +209,13 @@ bot.on("message", (msg) => {
 
 // Har daqiqada tekshiradi
 setInterval(() => {
-  const now = new Date();
-  const hour = now.getHours().toString().padStart(2, "0");
-  const minute = now.getMinutes().toString().padStart(2, "0");
-  const currentTime = `${hour}:${minute}`;
+  const now = new Date().toLocaleString("en-US", { timeZone: "Asia/Tashkent" });
+  const currentTime = new Date(now)
+    .toLocaleTimeString("uz-UZ", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+    .slice(0, 5);
 
   for (const chatId in userDayGoals) {
     userDayGoals[chatId].forEach((goal) => {
@@ -230,7 +234,7 @@ setInterval(() => {
       }
     });
   }
-}, 60 * 1000);
+}, 60 * 1000); // Har 1 daqiqada tekshiradi
 
 // ✅ Ha
 bot.onText(/✅ Ha/, (msg) => {
