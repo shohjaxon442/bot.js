@@ -1,34 +1,25 @@
 const TelegramBot = require("node-telegram-bot-api");
-const token = "7711842324:AAHMFaGCwkSo4F1FXqFAFqapsOuMAe9HgfU"; // <-- bu yerga tokeningizni yozing
+const token = "7711842324:AAHMFaGCwkSo4F1FXqFAFqapsOuMAe9HgfU";
 const bot = new TelegramBot(token, { polling: true });
 
-const userGoals = {}; // { chatId: ["Sport", "Matematika"] }
-const userDayGoals = {}; // { chatId: [ { time: "08:00", task: "Uyg'onaman", done: false } ] }
-const pairedUsers = {}; // { chatId: partnerChatId }
-const waitingUsers = {}; // { goal: [chatId1, chatId2] }
+const userGoals = {};
+const userDayGoals = {};
+const pairedUsers = {};
+const waitingUsers = {};
 
-// Start
+// Boshlanishi
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  const firstName = msg.from.first_name || "Foydalanuvchi";
-
-  bot.sendMessage(
-    chatId,
-    `Salom👋, ${firstName}! Maqsaddosh botga xush kelibsiz.`,
-    {
-      reply_markup: {
-        keyboard: [
-          ["🕒 Tugmani Bosing", "📅 Bugungi maqsadlar"],
-          ["🤝 Maqsaddoshlar"],
-        ],
-        resize_keyboard: true,
-      },
-    }
-  );
+  bot.sendMessage(chatId, "👋 Xush kelibsiz! Qanday yordam bera olaman?", {
+    reply_markup: {
+      keyboard: [["🕒 Vaqt", "📅 Bugungi maqsadlar"], ["🤝 Maqsaddoshlar"]],
+      resize_keyboard: true,
+    },
+  });
 });
 
-// 🕒 Tugmani Bosing
-bot.onText(/🕒 Tugmani Bosing/, (msg) => {
+// 🕒 Vaqt
+bot.onText(/🕒 Vaqt/, (msg) => {
   const chatId = msg.chat.id;
   const time = new Date().toLocaleTimeString("uz-UZ", {
     hour: "2-digit",
@@ -45,7 +36,7 @@ bot.onText(/📅 Bugungi maqsadlar/, (msg) => {
       keyboard: [
         ["➕ Maqsadlar qo‘shish"],
         ["📖 Bugungi maqsadlarim"],
-        ["🏠 Asosiy menyuga"],
+        ["🔙 Asosiy menyuga"],
       ],
       resize_keyboard: true,
     },
@@ -57,7 +48,7 @@ bot.onText(/➕ Maqsadlar qo‘shish/, (msg) => {
   const chatId = msg.chat.id;
   bot.sendMessage(
     chatId,
-    "Bugungi maqsadlaringizni vaqt bilan yozing. Masalan:\n08:00 Uyg'onaman\n12:30 Tushlik qilaman"
+    "Maqsadlaringizni soat bilan yozing (masalan: 08:00 Uyg'onaman):"
   );
   bot.once("message", (reply) => {
     const lines = reply.text.split("\n");
@@ -81,27 +72,33 @@ bot.onText(/📖 Bugungi maqsadlarim/, (msg) => {
   const chatId = msg.chat.id;
   const goals = userDayGoals[chatId];
   if (!goals || goals.length === 0) {
-    bot.sendMessage(chatId, "Sizda hali bugungi maqsadlar yo‘q.");
-    return;
+    return bot.sendMessage(chatId, "📭 Sizda bugungi maqsadlar yo‘q.");
   }
-  const goalList = goals
+  const list = goals
     .map((g) => `${g.time} - ${g.task} ${g.done ? "✅" : ""}`)
     .join("\n");
-  bot.sendMessage(chatId, `📋 Maqsadlaringiz:\n\n${goalList}`, {
+  bot.sendMessage(chatId, `📋 Maqsadlaringiz:\n${list}`, {
     reply_markup: {
       keyboard: [
-        ["✏️ Maqsadlarni tahrirlash", "❌ Maqsadlarni o‘chirish"],
-        ["🏠 Asosiy menyuga"],
+        ["✏️ Maqsadlarni tahrirlash", "❌ Ularni o‘chirish"],
+        ["🔙 Asosiy menyuga"],
       ],
       resize_keyboard: true,
     },
   });
 });
 
+// ❌ Ularni o‘chirish
+bot.onText(/❌ Ularni o‘chirish/, (msg) => {
+  const chatId = msg.chat.id;
+  userDayGoals[chatId] = [];
+  bot.sendMessage(chatId, "🗑️ Barcha maqsadlar o‘chirildi.");
+});
+
 // ✏️ Maqsadlarni tahrirlash
 bot.onText(/✏️ Maqsadlarni tahrirlash/, (msg) => {
   const chatId = msg.chat.id;
-  bot.sendMessage(chatId, "Yangi maqsadlaringizni vaqt bilan yozing:");
+  bot.sendMessage(chatId, "🔁 Yangi maqsadlaringizni soat bilan yozing:");
   bot.once("message", (reply) => {
     const lines = reply.text.split("\n");
     userDayGoals[chatId] = [];
@@ -119,40 +116,109 @@ bot.onText(/✏️ Maqsadlarni tahrirlash/, (msg) => {
   });
 });
 
-// ❌ Maqsadlarni o‘chirish
-bot.onText(/❌ Maqsadlarni o‘chirish/, (msg) => {
+// 🔙 Asosiy menyuga
+bot.onText(/🔙 Asosiy menyuga/, (msg) => {
   const chatId = msg.chat.id;
-  userDayGoals[chatId] = [];
-  bot.sendMessage(chatId, "❌ Barcha maqsadlaringiz o‘chirildi.");
+  bot.sendMessage(chatId, "🔙 Asosiy menyuga qaytdingiz.", {
+    reply_markup: {
+      keyboard: [["🕒 Vaqt", "📅 Bugungi maqsadlar"], ["🤝 Maqsaddoshlar"]],
+      resize_keyboard: true,
+    },
+  });
 });
 
-// 🏠 Asosiy menyuga
-bot.onText(/🏠 Asosiy menyuga/, (msg) => {
+// 🤝 Maqsaddoshlar
+bot.onText(/🤝 Maqsaddoshlar/, (msg) => {
   const chatId = msg.chat.id;
-  bot.sendMessage(chatId, "🏠 Asosiy menyu:", {
+  bot.sendMessage(chatId, "🤝 Maqsaddoshlar bo‘limi:", {
     reply_markup: {
       keyboard: [
-        ["🕒 Tugmani Bosing", "📅 Bugungi maqsadlar"],
-        ["🤝 Maqsaddoshlar"],
+        ["📌 Mening maqsadlarim"],
+        ["🔍 Maqsaddosh izlash"],
+        ["✏️ Maqsadlarni tahrirlash"],
+        ["🔙 Asosiy menyuga"],
       ],
       resize_keyboard: true,
     },
   });
 });
 
-// Maqsad vaqtini tekshirib eslatma yuborish
+// 📌 Mening maqsadlarim
+bot.onText(/📌 Mening maqsadlarim/, (msg) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(
+    chatId,
+    "Maqsadlaringizni vergul bilan yozing (Masalan: Sport, O‘qish):"
+  );
+  bot.once("message", (reply) => {
+    const goals = reply.text.split(",").map((g) => g.trim());
+    userGoals[chatId] = goals;
+    bot.sendMessage(chatId, "✅ Maqsadlaringiz saqlandi.");
+  });
+});
+
+// 🔍 Maqsaddosh izlash
+bot.onText(/🔍 Maqsaddosh izlash/, (msg) => {
+  const chatId = msg.chat.id;
+  const goals = userGoals[chatId];
+  if (!goals || goals.length === 0) {
+    return bot.sendMessage(chatId, "⛔ Avval maqsadlaringizni kiriting.");
+  }
+
+  let found = false;
+  for (const goal of goals) {
+    if (!waitingUsers[goal]) waitingUsers[goal] = [];
+    const otherUser = waitingUsers[goal].find(
+      (id) => id !== chatId && !pairedUsers[id]
+    );
+    if (otherUser) {
+      pairedUsers[chatId] = otherUser;
+      pairedUsers[otherUser] = chatId;
+      bot.sendMessage(chatId, "✅ Sizga maqsaddosh topildi! Chatni boshlang.");
+      bot.sendMessage(
+        otherUser,
+        "✅ Sizga maqsaddosh topildi! Chatni boshlang."
+      );
+      found = true;
+      break;
+    } else {
+      waitingUsers[goal].push(chatId);
+    }
+  }
+
+  if (!found) {
+    bot.sendMessage(chatId, "⏳ Maqsaddosh topilmagan. Boshqalarni kuting.");
+  }
+});
+
+// Maqsaddosh bilan chat
+bot.on("message", (msg) => {
+  const chatId = msg.chat.id;
+  const partnerId = pairedUsers[chatId];
+  if (
+    partnerId &&
+    !msg.text.includes("Maqsad") &&
+    !msg.text.includes("Tugma") &&
+    !msg.text.startsWith("/") &&
+    !msg.text.includes("🔙")
+  ) {
+    bot.sendMessage(partnerId, `💬 [Maqsaddoshingiz]: ${msg.text}`);
+  }
+});
+
+// Har daqiqada tekshiradi
 setInterval(() => {
   const now = new Date();
   const hour = now.getHours().toString().padStart(2, "0");
   const minute = now.getMinutes().toString().padStart(2, "0");
   const currentTime = `${hour}:${minute}`;
+
   for (const chatId in userDayGoals) {
-    const goals = userDayGoals[chatId];
-    goals.forEach((goal) => {
+    userDayGoals[chatId].forEach((goal) => {
       if (goal.time === currentTime && !goal.done && !goal.notified) {
         bot.sendMessage(
           chatId,
-          `⏰ ${goal.time} - ${goal.task}\n\nMaqsadingiz bajarildimi?`,
+          `⏰ ${goal.time} - ${goal.task}\n\nBajarildimi?`,
           {
             reply_markup: {
               keyboard: [["✅ Ha", "❌ Yo‘q"]],
@@ -166,135 +232,35 @@ setInterval(() => {
   }
 }, 60 * 1000);
 
-// ✅ Ha javobi
+// ✅ Ha
 bot.onText(/✅ Ha/, (msg) => {
   const chatId = msg.chat.id;
-  const goals = userDayGoals[chatId];
   const now = new Date();
-  const currentTime = `${now.getHours().toString().padStart(2, "0")}:${now
+  const time = `${now.getHours().toString().padStart(2, "0")}:${now
     .getMinutes()
     .toString()
     .padStart(2, "0")}`;
-  const goal = goals?.find(
-    (g) => g.time === currentTime && g.notified && !g.done
+  const goal = userDayGoals[chatId]?.find(
+    (g) => g.time === time && g.notified && !g.done
   );
   if (goal) {
     goal.done = true;
-    bot.sendMessage(chatId, "✅ Zo‘r! Endi keyingi maqsadga o'ting.", {
+    bot.sendMessage(chatId, "✅ Zo‘r! Endi keyingi maqsadga o‘ting.", {
       reply_markup: {
-        keyboard: [
-          ["🕒 Tugmani Bosing", "📅 Bugungi maqsadlar"],
-          ["🤝 Maqsaddoshlar"],
-        ],
+        keyboard: [["🕒 Vaqt", "📅 Bugungi maqsadlar"], ["🤝 Maqsaddoshlar"]],
         resize_keyboard: true,
       },
     });
   }
 });
 
-// ❌ Yo‘q javobi
+// ❌ Yo‘q
 bot.onText(/❌ Yo‘q/, (msg) => {
   const chatId = msg.chat.id;
-  bot.sendMessage(chatId, "😕 Mayli, keyingi safar yaxshiroq harakat qiling.", {
+  bot.sendMessage(chatId, "😐 Mayli, keyingi safar yaxshiroq harakat qiling!", {
     reply_markup: {
-      keyboard: [
-        ["🕒 Tugmani Bosing", "📅 Bugungi maqsadlar"],
-        ["🤝 Maqsaddoshlar"],
-      ],
+      keyboard: [["🕒 Vaqt", "📅 Bugungi maqsadlar"], ["🤝 Maqsaddoshlar"]],
       resize_keyboard: true,
     },
   });
-});
-
-// 🤝 Maqsaddoshlar bo‘limi
-bot.onText(/🤝 Maqsaddoshlar/, (msg) => {
-  const chatId = msg.chat.id;
-  bot.sendMessage(chatId, "Maqsaddoshlar bo‘limi:", {
-    reply_markup: {
-      keyboard: [
-        ["📌 Mening maqsadlarim"],
-        ["🔍 Maqsaddosh izlash"],
-        ["🏠 Asosiy menyuga"],
-      ],
-      resize_keyboard: true,
-    },
-  });
-});
-
-// 📌 Mening maqsadlarim
-bot.onText(/📌 Mening maqsadlarim/, (msg) => {
-  const chatId = msg.chat.id;
-  bot.sendMessage(
-    chatId,
-    "Maqsadlaringizni vergul bilan yozing (masalan: Sport, Matematika):"
-  );
-  bot.once("message", (reply) => {
-    const goals = reply.text
-      .split(",")
-      .map((g) => g.trim())
-      .filter((g) => g.length > 0);
-    userGoals[chatId] = goals;
-    bot.sendMessage(chatId, "✅ Maqsadlaringiz saqlandi: " + goals.join(", "));
-  });
-});
-
-// 🔍 Maqsaddosh izlash
-bot.onText(/🔍 Maqsaddosh izlash/, (msg) => {
-  const chatId = msg.chat.id;
-  const goals = userGoals[chatId];
-  if (!goals || goals.length === 0) {
-    bot.sendMessage(chatId, "Avval maqsadlaringizni kiriting.");
-    return;
-  }
-
-  let found = false;
-  for (const goal of goals) {
-    if (!waitingUsers[goal]) waitingUsers[goal] = [];
-    waitingUsers[goal] = waitingUsers[goal].filter((id) => id !== chatId);
-
-    const otherUser = waitingUsers[goal].find((id) => !pairedUsers[id]);
-    if (otherUser && !pairedUsers[otherUser]) {
-      pairedUsers[chatId] = otherUser;
-      pairedUsers[otherUser] = chatId;
-      waitingUsers[goal] = waitingUsers[goal].filter((id) => id !== otherUser);
-      bot.sendMessage(
-        chatId,
-        "✅ Sizga maqsaddosh topildi! Endi yozishingiz mumkin."
-      );
-      bot.sendMessage(
-        otherUser,
-        "✅ Sizga maqsaddosh topildi! Endi yozishingiz mumkin."
-      );
-      found = true;
-      break;
-    } else {
-      waitingUsers[goal].push(chatId);
-    }
-  }
-
-  if (!found) {
-    bot.sendMessage(
-      chatId,
-      "⏳ Maqsaddosh qidirilmoqda... Boshqa foydalanuvchilarni kuting."
-    );
-  }
-});
-
-// Maqsaddosh bilan chat
-bot.on("message", (msg) => {
-  const chatId = msg.chat.id;
-  const partnerId = pairedUsers[chatId];
-  if (
-    partnerId &&
-    !msg.text.includes("Maqsad") &&
-    !msg.text.includes("Tugma") &&
-    !msg.text.includes("📌") &&
-    !msg.text.includes("🔍") &&
-    !msg.text.includes("✏️") &&
-    !msg.text.includes("📅") &&
-    !msg.text.includes("🕒") &&
-    !msg.text.includes("🏠")
-  ) {
-    bot.sendMessage(partnerId, `💬 [Maqsaddoshingiz]: ${msg.text}`);
-  }
 });
