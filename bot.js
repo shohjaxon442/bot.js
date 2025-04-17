@@ -135,7 +135,7 @@ bot.onText(/🤝 Maqsaddoshlar/, (msg) => {
     reply_markup: {
       keyboard: [
         ["📌 Mening maqsadlarim"],
-        ["🔍 Maqsaddosh izlash"],
+        ["🔍 Maqsaddosh izlash", "❌ Maqsaddoshni to‘xtatish"],
         ["✏️ Maqsadlarni tahrirlash"],
         ["🔙 Asosiy menyuga"],
       ],
@@ -192,6 +192,24 @@ bot.onText(/🔍 Maqsaddosh izlash/, (msg) => {
   }
 });
 
+// ❌ Maqsaddoshni to‘xtatish
+bot.onText(/❌ Maqsaddoshni to‘xtatish/, (msg) => {
+  const chatId = msg.chat.id;
+  const partnerId = pairedUsers[chatId];
+  if (partnerId) {
+    // Suhbati to‘xtatish
+    delete pairedUsers[chatId];
+    delete pairedUsers[partnerId];
+    bot.sendMessage(
+      chatId,
+      "Suhbatingiz to‘xtatildi. Yangi maqsaddosh izlashni boshlashingiz mumkin."
+    );
+    bot.sendMessage(partnerId, "Sizning suhbatingiz to‘xtatildi.");
+  } else {
+    bot.sendMessage(chatId, "Sizda hozirda maqsaddosh yo‘q.");
+  }
+});
+
 // Maqsaddosh bilan chat
 bot.on("message", (msg) => {
   const chatId = msg.chat.id;
@@ -234,37 +252,4 @@ setInterval(() => {
       }
     });
   }
-}, 60 * 1000); // Har 1 daqiqada tekshiradi
-
-// ✅ Ha
-bot.onText(/✅ Ha/, (msg) => {
-  const chatId = msg.chat.id;
-  const now = new Date();
-  const time = `${now.getHours().toString().padStart(2, "0")}:${now
-    .getMinutes()
-    .toString()
-    .padStart(2, "0")}`;
-  const goal = userDayGoals[chatId]?.find(
-    (g) => g.time === time && g.notified && !g.done
-  );
-  if (goal) {
-    goal.done = true;
-    bot.sendMessage(chatId, "✅ Zo‘r! Endi keyingi maqsadga o‘ting.", {
-      reply_markup: {
-        keyboard: [["🕒 Vaqt", "📅 Bugungi maqsadlar"], ["🤝 Maqsaddoshlar"]],
-        resize_keyboard: true,
-      },
-    });
-  }
-});
-
-// ❌ Yo‘q
-bot.onText(/❌ Yo‘q/, (msg) => {
-  const chatId = msg.chat.id;
-  bot.sendMessage(chatId, "😐 Mayli, keyingi safar yaxshiroq harakat qiling!", {
-    reply_markup: {
-      keyboard: [["🕒 Vaqt", "📅 Bugungi maqsadlar"], ["🤝 Maqsaddoshlar"]],
-      resize_keyboard: true,
-    },
-  });
-});
+}, 60000); // 1 minut
