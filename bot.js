@@ -169,35 +169,50 @@ bot.onText(/📌 Mening maqsadlarim/, (msg) => {
 // 🔍 Maqsaddosh izlash
 bot.onText(/🔍 Maqsaddosh izlash/, (msg) => {
   const chatId = msg.chat.id;
-  const goals = userGoals[chatId];
-  if (!goals || goals.length === 0) {
-    return bot.sendMessage(chatId, "⛔ Avval maqsadlaringizni kiriting.");
-  }
+  bot.sendMessage(
+    chatId,
+    "O'z maqsadingizni kiriting (masalan: Matematika, Kimyo):"
+  );
 
-  let found = false;
-  for (const goal of goals) {
-    if (!waitingUsers[goal]) waitingUsers[goal] = [];
-    const otherUser = waitingUsers[goal].find(
-      (id) => id !== chatId && !pairedUsers[id]
-    );
-    if (otherUser) {
-      pairedUsers[chatId] = otherUser;
-      pairedUsers[otherUser] = chatId;
-      bot.sendMessage(chatId, "✅ Sizga maqsaddosh topildi! Chatni boshlang.");
-      bot.sendMessage(
-        otherUser,
-        "✅ Sizga maqsaddosh topildi! Chatni boshlang."
-      );
-      found = true;
-      break;
-    } else {
-      waitingUsers[goal].push(chatId);
+  bot.once("message", (reply) => {
+    const userGoal = reply.text.trim();
+
+    // Maqsadlarni saqlash
+    if (!userGoals[chatId]) {
+      userGoals[chatId] = [];
     }
-  }
+    userGoals[chatId].push(userGoal);
 
-  if (!found) {
-    bot.sendMessage(chatId, "⏳ Maqsaddosh topilmagan. Boshqalarni kuting.");
-  }
+    bot.sendMessage(chatId, `✅ Sizning maqsadingiz: "${userGoal}" saqlandi.`);
+
+    let found = false;
+    for (const goal of userGoals[chatId]) {
+      if (!waitingUsers[goal]) waitingUsers[goal] = [];
+      const otherUser = waitingUsers[goal].find(
+        (id) => id !== chatId && !pairedUsers[id]
+      );
+      if (otherUser) {
+        pairedUsers[chatId] = otherUser;
+        pairedUsers[otherUser] = chatId;
+        bot.sendMessage(
+          chatId,
+          "✅ Sizga maqsaddosh topildi! Chatni boshlang."
+        );
+        bot.sendMessage(
+          otherUser,
+          "✅ Sizga maqsaddosh topildi! Chatni boshlang."
+        );
+        found = true;
+        break;
+      } else {
+        waitingUsers[goal].push(chatId);
+      }
+    }
+
+    if (!found) {
+      bot.sendMessage(chatId, "⏳ Maqsaddosh topilmagan. Boshqalarni kuting.");
+    }
+  });
 });
 
 // 🔁 Eski maqsaddosh bilan suhbatni to‘xtatish
