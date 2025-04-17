@@ -147,8 +147,8 @@ bot.onText(/🤝 Maqsaddoshlar/, (msg) => {
 // 📌 Mening maqsadlarim
 bot.onText(/📌 Mening maqsadlarim/, (msg) => {
   const chatId = msg.chat.id;
-  if (userGoals[chatId] && userGoals[chatId].length > 0) {
-    const goals = userGoals[chatId].join("\n");
+  if (userDayGoals[chatId] && userDayGoals[chatId].length > 0) {
+    const goals = userDayGoals[chatId].map((goal) => goal.task).join("\n");
     bot.sendMessage(chatId, `📋 Sizning maqsadlaringiz:\n${goals}`, {
       reply_markup: {
         keyboard: [
@@ -176,11 +176,7 @@ bot.onText(/🔍 Maqsaddosh izlash/, (msg) => {
 
   bot.once("message", (reply) => {
     const userGoal = reply.text.trim();
-
-    // Maqsadlarni saqlash
-    if (!userGoals[chatId]) {
-      userGoals[chatId] = [];
-    }
+    userGoals[chatId] = userGoals[chatId] || [];
     userGoals[chatId].push(userGoal);
 
     bot.sendMessage(chatId, `✅ Sizning maqsadingiz: "${userGoal}" saqlandi.`);
@@ -249,8 +245,3 @@ bot.on("message", (msg) => {
     bot.sendMessage(partnerId, `💬 [Maqsaddoshingiz]: ${msg.text}`);
   }
 });
-
-// Har daqiqada tekshiradi
-setInterval(() => {
-  // Kirish qilingan vaqtlar va boshqa operatsiyalarni optimallashtirish
-}, 60000);
