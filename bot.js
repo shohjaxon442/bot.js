@@ -135,8 +135,8 @@ bot.onText(/🤝 Maqsaddoshlar/, (msg) => {
     reply_markup: {
       keyboard: [
         ["📌 Mening maqsadlarim"],
-        ["🔍 Maqsaddosh izlash", "❌ Maqsaddoshni to‘xtatish"],
-        ["✏️ Maqsadlarni tahrirlash"],
+        ["🔍 Maqsaddosh izlash"],
+        ["🔁 Eski maqsaddosh bilan suhbatni to‘xtatish"],
         ["🔙 Asosiy menyuga"],
       ],
       resize_keyboard: true,
@@ -147,15 +147,23 @@ bot.onText(/🤝 Maqsaddoshlar/, (msg) => {
 // 📌 Mening maqsadlarim
 bot.onText(/📌 Mening maqsadlarim/, (msg) => {
   const chatId = msg.chat.id;
-  bot.sendMessage(
-    chatId,
-    "Maqsadlaringizni vergul bilan yozing (Masalan: Sport, O‘qish):"
-  );
-  bot.once("message", (reply) => {
-    const goals = reply.text.split(",").map((g) => g.trim());
-    userGoals[chatId] = goals;
-    bot.sendMessage(chatId, "✅ Maqsadlaringiz saqlandi.");
-  });
+  if (userGoals[chatId] && userGoals[chatId].length > 0) {
+    const goals = userGoals[chatId].join("\n");
+    bot.sendMessage(chatId, `📋 Sizning maqsadlaringiz:\n${goals}`, {
+      reply_markup: {
+        keyboard: [
+          ["📅 Bugungi maqsadlarim", "🔙 Asosiy menyuga"],
+          ["✏️ Maqsadlarni tahrirlash"],
+        ],
+        resize_keyboard: true,
+      },
+    });
+  } else {
+    bot.sendMessage(
+      chatId,
+      "⛔ Sizda hozirda maqsadlar yo‘q. Iltimos, avval maqsadlaringizni kiriting."
+    );
+  }
 });
 
 // 🔍 Maqsaddosh izlash
@@ -192,21 +200,23 @@ bot.onText(/🔍 Maqsaddosh izlash/, (msg) => {
   }
 });
 
-// ❌ Maqsaddoshni to‘xtatish
-bot.onText(/❌ Maqsaddoshni to‘xtatish/, (msg) => {
+// 🔁 Eski maqsaddosh bilan suhbatni to‘xtatish
+bot.onText(/🔁 Eski maqsaddosh bilan suhbatni to‘xtatish/, (msg) => {
   const chatId = msg.chat.id;
   const partnerId = pairedUsers[chatId];
   if (partnerId) {
-    // Suhbati to‘xtatish
     delete pairedUsers[chatId];
     delete pairedUsers[partnerId];
     bot.sendMessage(
       chatId,
-      "Suhbatingiz to‘xtatildi. Yangi maqsaddosh izlashni boshlashingiz mumkin."
+      "✅ Suhbat to‘xtatildi. Yangi maqsaddosh izlashni boshlang."
     );
-    bot.sendMessage(partnerId, "Sizning suhbatingiz to‘xtatildi.");
+    bot.sendMessage(partnerId, "✅ Suhbat to‘xtatildi.");
   } else {
-    bot.sendMessage(chatId, "Sizda hozirda maqsaddosh yo‘q.");
+    bot.sendMessage(
+      chatId,
+      "⛔ Siz hozirda hech qanday maqsaddoshga ega emassiz."
+    );
   }
 });
 
@@ -227,29 +237,5 @@ bot.on("message", (msg) => {
 
 // Har daqiqada tekshiradi
 setInterval(() => {
-  const now = new Date().toLocaleString("en-US", { timeZone: "Asia/Tashkent" });
-  const currentTime = new Date(now)
-    .toLocaleTimeString("uz-UZ", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-    .slice(0, 5);
-
-  for (const chatId in userDayGoals) {
-    userDayGoals[chatId].forEach((goal) => {
-      if (goal.time === currentTime && !goal.done && !goal.notified) {
-        bot.sendMessage(
-          chatId,
-          `⏰ ${goal.time} - ${goal.task}\n\nBajarildimi?`,
-          {
-            reply_markup: {
-              keyboard: [["✅ Ha", "❌ Yo‘q"]],
-              resize_keyboard: true,
-            },
-          }
-        );
-        goal.notified = true;
-      }
-    });
-  }
-}, 60000); // 1 minut
+  // Kirish qilingan vaqtlar va boshqa operatsiyalarni optimallashtirish
+}, 60000);
